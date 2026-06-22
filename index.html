@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI PM — 智能产品经理工作台</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --card: #161b22;
+    --border: #30363d;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --accent: #58a6ff;
+    --green: #3fb950;
+    --orange: #d2991d;
+    --purple: #a371f7;
+    --red: #f85149;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans SC', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .container { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+
+  /* Hero */
+  .hero {
+    text-align: center;
+    padding: 60px 0 40px;
+  }
+  .hero h1 {
+    font-size: 2.5em;
+    font-weight: 800;
+    background: linear-gradient(135deg, #58a6ff, #a371f7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 12px;
+  }
+  .hero p {
+    font-size: 1.15em;
+    color: var(--muted);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .badges {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+  .badge {
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 500;
+    border: 1px solid var(--border);
+  }
+  .badge.mit { border-color: var(--green); color: var(--green); }
+  .badge.fw { border-color: var(--accent); color: var(--accent); }
+  .badge.lang { border-color: var(--purple); color: var(--purple); }
+
+  /* Section */
+  .section { margin: 50px 0; }
+  .section h2 {
+    font-size: 1.5em;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section h2 .icon { font-size: 1.3em; }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 0;
+    border: 1px solid var(--border);
+    border-radius: 8px 8px 0 0;
+    overflow: hidden;
+  }
+  .tab {
+    flex: 1;
+    padding: 14px 16px;
+    background: var(--card);
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 0.95em;
+    font-weight: 500;
+    transition: all 0.2s;
+    border-bottom: 2px solid transparent;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+    background: #1c2433;
+  }
+
+  /* Demo panel */
+  .demo-panel {
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    background: var(--card);
+    overflow: hidden;
+  }
+  .demo-content { display: none; padding: 24px; }
+  .demo-content.active { display: block; }
+
+  /* Chat bubbles */
+  .chat { display: flex; flex-direction: column; gap: 16px; }
+  .msg {
+    max-width: 85%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 0.93em;
+    line-height: 1.55;
+    animation: fadeIn 0.4s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .msg.user {
+    align-self: flex-end;
+    background: #1f6feb33;
+    border: 1px solid #1f6feb55;
+  }
+  .msg.ai {
+    align-self: flex-start;
+    background: #1c2128;
+    border: 1px solid var(--border);
+  }
+  .msg .label {
+    font-size: 0.75em;
+    font-weight: 600;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .msg.user .label { color: var(--accent); }
+  .msg.ai .label { color: var(--green); }
+  .msg .step {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    margin-bottom: 6px;
+    background: #a371f722;
+    color: var(--purple);
+  }
+
+  /* Output preview */
+  .preview-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 0.85em;
+  }
+  .preview-table th {
+    text-align: left;
+    padding: 8px 10px;
+    background: #1c2128;
+    border: 1px solid var(--border);
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .preview-table td {
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+  }
+
+  /* Metrics */
+  .timing {
+    display: flex;
+    gap: 16px;
+    margin-top: 12px;
+    font-size: 0.82em;
+    color: var(--muted);
+  }
+  .timing span { display: flex; align-items: center; gap: 4px; }
+
+  /* Features grid */
+  .features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+  }
+  .feature-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+  }
+  .feature-card h3 { font-size: 1em; margin-bottom: 6px; }
+  .feature-card p { font-size: 0.88em; color: var(--muted); }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 40px 0;
+    color: var(--muted);
+    font-size: 0.85em;
+    border-top: 1px solid var(--border);
+  }
+  .footer a { color: var(--accent); text-decoration: none; }
+  .footer a:hover { text-decoration: underline; }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .hero h1 { font-size: 1.8em; }
+    .msg { max-width: 92%; }
+    .features { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Hero -->
+  <div class="hero">
+    <h1>AI PM</h1>
+    <p>面向产品经理的 Claude Code 智能工作台 —— PRD 生成 · 竞品分析 · 用户反馈聚类，七个方法论驱动，三分钟出专业交付物</p>
+    <div class="badges">
+      <span class="badge mit">MIT 开源</span>
+      <span class="badge fw">JTBD · Kano · RICE · Porter</span>
+      <span class="badge lang">中英双语</span>
+    </div>
+  </div>
+
+  <!-- Demo Tabs -->
+  <div class="section">
+    <h2><span class="icon">▶</span> 效果演示</h2>
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('prd')">📋 PRD 生成</button>
+      <button class="tab" onclick="switchTab('comp')">🔍 竞品分析</button>
+      <button class="tab" onclick="switchTab('feedback')">📊 反馈聚类</button>
+    </div>
+    <div class="demo-panel">
+      <!-- PRD Demo -->
+      <div class="demo-content active" id="demo-prd">
+        <div class="chat">
+          <div class="msg user">
+            <div class="label">👤 用户输入</div>
+            帮我做一个 AI 医学影像辅助诊断的 PRD，肺结节和脑卒中方向，目标用户是三甲医院放射科医生
+          </div>
+          <div class="msg ai">
+            <div class="label">🤖 Skill 响应</div>
+            <div class="step">Step 1 · 澄清问题</div>
+            <p style="margin-top:4px">好的，在生成之前确认几个关键信息：<br>
+            ① 目标疾病确认肺结节筛查 + 脑卒中 CT？还有其他吗？<br>
+            ② 商业模式是 SaaS 订阅还是买断？<br>
+            ③ 时间线？需要走 NMPA 三类证吗？</p>
+          </div>
+          <div class="msg user">
+            <div class="label">👤 用户确认</div>
+            就这两个方向，SaaS + 按例收费，要报 NMPA，6 个月出 MVP
+          </div>
+          <div class="msg ai">
+            <div class="label">🤖 Skill 生成输出</div>
+            <div class="step">Step 2 · Web 调研 → Step 3 · 生成 PRD</div>
+            <p style="margin-top:4px">已搜索行业数据：2025 中国 AI 影像市场 150 亿元，NMPA 已批 86 款产品。以下为完整 PRD（节选）：</p>
+            <table class="preview-table">
+              <tr><th>指标</th><th>基线</th><th>目标</th><th>时间线</th></tr>
+              <tr><td>肺结节检出敏感度</td><td>80%（人工）</td><td>≥94%</td><td>MVP</td></tr>
+              <tr><td>单张 CT 判读时间</td><td>5-8 min</td><td>≤2 min</td><td>MVP</td></tr>
+              <tr><td>基层脑卒中误判率</td><td>25-35%</td><td>≤10%</td><td>12 个月</td></tr>
+              <tr><td>签约医院数</td><td>0</td><td>50 家</td><td>18 个月</td></tr>
+            </table>
+            <p style="margin-top:8px;font-size:0.85em;color:var(--muted)">完整输出含 10 章节（执行摘要 · 问题陈述 · 用户画像 · 用户故事 · 功能需求 · 非功能需求 · 风险矩阵 · 发布计划）</p>
+            <div class="timing">
+              <span>⏱ 总耗时 &lt;3 分钟</span><span>📐 JTBD · Kano · RICE</span><span>📊 实时市场数据</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Competitive Analysis Demo -->
+      <div class="demo-content" id="demo-comp">
+        <div class="chat">
+          <div class="msg user">
+            <div class="label">👤 用户输入</div>
+            做一下飞书、钉钉、企业微信的竞品分析，聚焦在 AI 功能和定价策略
+          </div>
+          <div class="msg ai">
+            <div class="label">🤖 Skill 响应</div>
+            <div class="step">Step 1 · 自动 WebSearch</div>
+            <p style="margin-top:4px">已抓取 G2/Capterra 评分、各平台官网定价、36氪/虎嗅近 6 个月报道。生成中……</p>
+          </div>
+          <div class="msg ai">
+            <div class="label">🤖 输出节选</div>
+            <table class="preview-table">
+              <tr><th>功能</th><th>飞书</th><th>钉钉</th><th>企业微信</th></tr>
+              <tr><td>AI 会议纪要</td><td>★★★★ 原生集成</td><td>★★★ 钉钉文档 AI</td><td>★★ 通过腾讯混元</td></tr>
+              <tr><td>AI 知识问答</td><td>★★★★ My AI 助手</td><td>★★★ 智能问答</td><td>★★ 仅 FAQ 级别</td></tr>
+              <tr><td>免费版定价</td><td>200 人免费</td><td>100 人免费</td><td>无人数限制</td></tr>
+              <tr><td>企业版起价</td><td>¥25/人/月</td><td>¥20/人/月</td><td>免费（靠微信生态）</td></tr>
+            </table>
+            <p style="margin-top:8px;font-size:0.85em;color:var(--muted)">战略建议：飞书 AI 最强但最贵，企业微信免费但 AI 最弱 —— 中价位 + 强 AI 是市场白区</p>
+            <div class="timing">
+              <span>⏱ 含调研 &lt;5 分钟</span><span>📐 Porter · SWOT · 特性矩阵</span><span>🔗 10+ 来源引用</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feedback Clustering Demo -->
+      <div class="demo-content" id="demo-feedback">
+        <div class="chat">
+          <div class="msg user">
+            <div class="label">👤 用户输入</div>
+            这 200 条 NPS 问卷回复帮我聚类一下，看看用户最不满的是什么
+          </div>
+          <div class="msg ai">
+            <div class="label">🤖 Skill 响应</div>
+            <div class="step">Step 1 · 解析 200 条 → Step 2 · 主题聚类 → Step 3 · 情感+影响评分</div>
+            <table class="preview-table">
+              <tr><th>#</th><th>主题</th><th>数量</th><th>占比</th><th>情感</th><th>影响</th><th>建议</th></tr>
+              <tr><td>🔴1</td><td>App 启动速度慢</td><td>68</td><td>34%</td><td>😡 极差</td><td>高</td><td>下版本优先优化冷启动</td></tr>
+              <tr><td>🟡2</td><td>搜索找不到历史文件</td><td>41</td><td>21%</td><td>😞 差</td><td>中</td><td>接入语义搜索</td></tr>
+              <tr><td>🟡3</td><td>通知过多打扰</td><td>32</td><td>16%</td><td>😞 差</td><td>中</td><td>通知偏好设置重构</td></tr>
+              <tr><td>🟢4</td><td>协作功能好用</td><td>28</td><td>14%</td><td>😊 好</td><td>低</td><td>保持，可用于营销</td></tr>
+              <tr><td>⚪5</td><td>其他零散</td><td>31</td><td>16%</td><td>😐 中</td><td>低</td><td>季度复查</td></tr>
+            </table>
+            <div class="timing">
+              <span>⏱ 200 条 &lt;2 分钟</span><span>📐 亲和图 · RICE-Kano 混合</span><span>🔤 中文隐式情感识别</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Features -->
+  <div class="section">
+    <h2><span class="icon">⚡</span> 核心设计</h2>
+    <div class="features">
+      <div class="feature-card">
+        <h3>🎯 Smart Scoping</h3>
+        <p>生成前先问 2-4 个澄清问题，绝不输出泛泛的通用模板。上下文比速度更重要。</p>
+      </div>
+      <div class="feature-card">
+        <h3>🧠 方法论驱动</h3>
+        <p>JTBD、Kano、RICE、Porter's Five Forces、SWOT、Blue Ocean、Affinity Mapping 七个框架嵌入工作流。</p>
+      </div>
+      <div class="feature-card">
+        <h3>📐 Progressive Disclosure</h3>
+        <p>核心指令 &lt;500 行 + 深层框架按需加载。平衡 LLM 上下文效率与输出质量。</p>
+      </div>
+      <div class="feature-card">
+        <h3>🌐 实时调研</h3>
+        <p>竞品分析时自动 WebSearch 抓取定价、融资、用户评价，结论来自数据而非记忆。</p>
+      </div>
+      <div class="feature-card">
+        <h3>🇨🇳 中文优化</h3>
+        <p>针对国内平台（App Store 中国区、应用宝、华为商店）评分通胀、隐式否定做了专项处理。</p>
+      </div>
+      <div class="feature-card">
+        <h3>🔧 开源可扩展</h3>
+        <p>MIT 协议，3 个参考文档 + 3 个示例输出。PR/MR 欢迎，方向：路线图规划、OKR 起草、用户访谈提纲。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <p>
+      <a href="https://github.com/liuziqi10/ai-pm">GitHub</a> ·
+      <a href="https://github.com/liuziqi10/ai-pm/blob/master/README.md">文档</a> ·
+      <a href="https://github.com/liuziqi10/ai-pm/tree/master/skills/ai-pm/examples">示例</a>
+    </p>
+    <p style="margin-top:8px">Built with Claude Code · MIT License</p>
+  </div>
+
+</div>
+
+<script>
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.demo-content').forEach(d => d.classList.remove('active'));
+  document.getElementById('demo-' + name).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>
